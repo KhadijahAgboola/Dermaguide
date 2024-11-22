@@ -20,7 +20,6 @@ cairocffi==1.7.1
 chardet==5.2.0
 checks==0.2
 cloud_tpu_client==0.10
-conda==4.3.16
 ConfigParser==7.1.0
 contextlib2==21.6.0
 coremltools==8.1
