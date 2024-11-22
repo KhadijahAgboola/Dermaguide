@@ -39,7 +39,6 @@ fastparquet==2024.11.0
 fbscribelogger==0.1.7
 flax==0.10.2
 flint==0.0.1
-foo==.1
 Foundation==0.1.0a0.dev1
 fqdn==1.5.1
 freetype_py==2.5.1
