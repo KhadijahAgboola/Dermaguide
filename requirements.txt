@@ -10,7 +10,7 @@ array_api_strict==2.2
 astropy==7.0.0
 atheris==2.3.0
 av==13.1.0
-BeautifulSoup==3.2.2
+beautifulsoup4
 beautifulsoup4==4.12.3
 bokeh==3.6.1
 boto3==1.35.68
