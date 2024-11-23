@@ -119,7 +119,6 @@ pyinstrument==5.0.0
 pymc==5.18.2
 pymc3==3.11.6
 pynvml==11.5.3
-pyodide==0.0.2
 pyOpenSSL==24.2.1
 pyperf==2.8.1
 PyQt4==4.11.4
