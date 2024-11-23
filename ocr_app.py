@@ -62,7 +62,7 @@ st.sidebar.markdown(
         </p>
         <p>
             I created this program to help simplify text extraction from images and manage the data effectively. 
-            This tool extracts text (especially license plate numbers), organizes it into structured formats like Excel, 
+            This tool extracts text from images, organizes it into structured formats like Excel, word
             and saves the data locally.
         </p>
         <p>
@@ -81,14 +81,14 @@ poppler_path = r"C:\\Users\\Khadijat Agboola\\Desktop\\poppler-24.08.0\\Library\
 st.subheader("Select an action you'd like to perform with the app")
 st.write("""
 This tool allows you to:
-1. Extract text from images (e.g., car license plate numbers from images) and save the result as an Excel file.
+1. Extract text from images (e.g., spreadsheet image) and save the result as an Excel file.
 2. Extract text from scanned documents and save the result as a Word document.
 """)
 
 # User Choice
 task_choice = st.radio(
     "What would you like to do?",
-    ("Scan Car License Number or any other image", "Upload Scanned Document")
+    ("Upload spreadsheet image or any other image", "Upload Scanned word Document")
 )
 
 # Function to preprocess the image
@@ -183,10 +183,9 @@ def extract_text_with_columns(image, reader):
 
 
 # Updated logic for "Scan Car License Number or any other image"
-if task_choice == "Scan Car License Number or any other image":
-    st.write("You can find car license number images from this [link](https://www.google.com/search?q=car+license+number).")
+if task_choice == "Upload spreadsheet image or any other image":
     uploaded_file = st.file_uploader(
-        "Upload an image file of a car license plate (JPEG, PNG)", type=["jpg", "jpeg", "png"]
+        "Upload an image file of a spreadsheet (JPEG, PNG)", type=["jpg", "jpeg", "png"]
     )
     if uploaded_file:
         file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
@@ -221,7 +220,7 @@ if task_choice == "Scan Car License Number or any other image":
 
 
 # Process the chosen task
-elif task_choice == "Upload Scanned Document":
+elif task_choice == "Upload Scanned word Document":
     uploaded_file = st.file_uploader(
         "Upload a scanned document (JPEG, PNG, PDF)", type=["jpg", "jpeg", "png", "pdf"]
     )
