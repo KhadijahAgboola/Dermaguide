@@ -85,7 +85,7 @@ mtrand==0.1
 multiset==3.2.0
 munkres==1.1.4
 mypy==1.13.0
-numpy==1.23.3
+numpy==1.25.0
 numexpr==2.10.1
 numpydoc==1.8.0
 oauth2client==4.1.3
