@@ -147,7 +147,7 @@ scikit_learn==1.5.2
 scikits.talkbox==0.2.5
 scipy_doctest==1.4
 selenium==4.26.1
-setuptools_scm==8.1.0
+setuptools_scm=8.1.0
 shiboken2==5.15.2.1
 shiboken6==6.8.0.2
 SimpleITK==2.4.0
