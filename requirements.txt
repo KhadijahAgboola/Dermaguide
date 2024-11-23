@@ -2,6 +2,8 @@ Streamlit== 1.40.1
 
 opencv-python== 4.10.0.84
 
+opencv-contrib-python==4.10.0.84
+
 EasyOCR== 1.7.2
 
 Pandas== 2.2.3
