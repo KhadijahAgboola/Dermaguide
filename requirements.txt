@@ -120,8 +120,6 @@ pymc==5.18.2
 pymc3==3.11.6
 pynvml==11.5.3
 pyOpenSSL==24.2.1
-pyperf==2.8.1
-PyQt4==4.11.4
 PyQt5==5.15.11
 PyQt6==6.7.1
 pysat==3.2.1
