@@ -136,7 +136,6 @@ railroad==0.5.0
 redis==5.2.0
 reportlab==4.2.5
 requests_kerberos==0.15.0
-Res==0.1.7
 rfc3339_validator==0.1.4
 rfc3986_validator==0.1.1
 rfc3987==1.3.8
