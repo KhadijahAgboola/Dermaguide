@@ -1,0 +1,1 @@
+web: bash install_poppler.sh && streamlit run ocr_app.py
