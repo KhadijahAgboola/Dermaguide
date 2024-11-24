@@ -1,1 +1,1 @@
-web: sh setup.sh && streamlit run ocr_app.py
+web: streamlit run ocr_app.py --server.port=$PORT --server.headless=true
