@@ -76,7 +76,7 @@ st.sidebar.markdown(
 )
 
 # Specify the path to the poppler binary directory
-poppler_path = r"C:\\Users\\Khadijat Agboola\\Desktop\\poppler-24.08.0\\Library\\bin"
+poppler_path = r"poppler-24.08.0\\Library\\bin"
 
 # Choose Your Task
 st.subheader("Select an action you'd like to perform with the app")
