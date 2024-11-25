@@ -1,5 +1,6 @@
 import streamlit as st
 import cv2
+import openpyxl
 import easyocr
 import pandas as pd
 from datetime import datetime
@@ -195,7 +196,7 @@ if task_choice == "Upload spreadsheet image or any other image":
         reader = easyocr.Reader(["en"], gpu=False)
 
         # Extract text organized into columns
-        st.image(image, caption="Uploaded Image", use_column_width=True)
+        st.image(image, caption="Uploaded Image", use_container_width=True)
         df = extract_text_with_columns(image, reader)
 
         if not df.empty:
@@ -234,7 +235,7 @@ elif task_choice == "Upload Scanned word Document":
             for page_number, page in enumerate(pdf_pages, start=1):
                 st.write(f"Processing page {page_number}...")
                 image = np.array(page)
-                st.image(image, caption=f"Uploaded Page {page_number}", use_column_width=True)
+                st.image(image, caption=f"Uploaded Page {page_number}", use_container_width=True)
                 reader = easyocr.Reader(["en"], gpu=False)
                 extracted_text = extract_text(image, reader)
                 all_text.extend(extracted_text)
@@ -243,7 +244,7 @@ elif task_choice == "Upload Scanned word Document":
             # Process image files
             file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
             image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
-            st.image(image, caption="Uploaded Image", use_column_width=True)
+            st.image(image, caption="Uploaded Image", use_container_width=True)
             reader = easyocr.Reader(["en"], gpu=False)
             extracted_text = extract_text(image, reader)
             all_text = extracted_text
