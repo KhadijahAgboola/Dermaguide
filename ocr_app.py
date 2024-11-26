@@ -8,7 +8,7 @@ from io import BytesIO
 import numpy as np
 from PIL import Image
 from docx import Document
-from pdf2image import convert_from_bytes
+import fitz
 
 # CSS for background color
 st.markdown(
@@ -75,9 +75,6 @@ st.sidebar.markdown(
     unsafe_allow_html=True
 )
 
-# Specify the path to the poppler binary directory
-poppler_path = r"C:\\Users\\Khadijat Agboola\\Desktop\\poppler-24.08.0\\Library\\bin"
-
 # Choose Your Task
 st.subheader("Select an action you'd like to perform with the app")
 st.write("""
@@ -91,6 +88,58 @@ task_choice = st.radio(
     "What would you like to do?",
     ("Upload spreadsheet image or any other image", "Upload Scanned word Document")
 )
+
+def extract_text_with_paragraphs(image, reader):
+    """
+    Extracts text from the image, grouping lines into paragraphs based on vertical spacing.
+
+    Parameters:
+    - image: The image to process.
+    - reader: EasyOCR Reader object.
+
+    Returns:
+    - A list of paragraphs as strings.
+    """
+    results = reader.readtext(image, detail=1, paragraph=False)
+    if not results:
+        return []
+
+    # Sort results by the vertical position of bounding boxes
+    results = sorted(results, key=lambda x: x[0][0][1])
+
+    paragraphs = []
+    current_paragraph = []
+    previous_y = None
+    line_spacing_threshold = 15  # Adjust as needed
+
+    for (bbox, text, confidence) in results:
+        top_left = bbox[0]
+        y = top_left[1]  # Vertical position of the line
+
+        if previous_y is not None and abs(y - previous_y) > line_spacing_threshold:
+            # Start a new paragraph
+            paragraphs.append(" ".join(current_paragraph))
+            current_paragraph = []
+
+        current_paragraph.append(text)
+        previous_y = y
+
+    # Add the last paragraph
+    if current_paragraph:
+        paragraphs.append(" ".join(current_paragraph))
+
+    return paragraphs
+
+def extract_text_from_pdf(page):
+    """
+    Extract text directly from a PDF page using PyMuPDF.
+    """
+    text = page.get_text("text")  # Get plain text
+    if text.strip():  # Return text only if it exists
+        return text.split('\n')  # Split into lines for better formatting
+    return []
+
+
 
 # Function to preprocess the image
 def preprocess_image(image):
@@ -106,7 +155,6 @@ def extract_text(image, reader):
     results = reader.readtext(preprocessed_image, detail=1, paragraph=False)
     extracted_text = [text for _, text, _ in results]
     return extracted_text
-
 
 # Save data to Excel
 def save_license_data(data):
@@ -126,8 +174,27 @@ def save_to_word(text):
     output.seek(0)
     return output
 
+def save_to_word_with_paragraphs(paragraphs):
+    """
+    Save paragraphs to a Word document, preserving paragraph structure.
+
+    Parameters:
+    - paragraphs: List of paragraphs as strings.
+
+    Returns:
+    - A BytesIO object containing the Word document.
+    """
+    output = BytesIO()
+    doc = Document()
+    for paragraph in paragraphs:
+        doc.add_paragraph(paragraph)
+        doc.add_paragraph("")  # Add a blank line for spacing between paragraphs
+    doc.save(output)
+    output.seek(0)
+    return output
+
 # Function to extract text with spatial arrangement
-def extract_text_with_columns(image, reader):
+def extract_text_with_columns(enhanced_image, reader):
     """
     Extracts text from the image along with their bounding box positions and organizes it into columns.
 
@@ -138,7 +205,7 @@ def extract_text_with_columns(image, reader):
     Returns:
     - A DataFrame with the extracted text organized into columns.
     """
-    results = reader.readtext(image, detail=1, paragraph=False)
+    results = reader.readtext(enhanced_image, detail=1, paragraph=False)
     extracted_data = []
 
     for (bbox, text, confidence) in results:
@@ -182,7 +249,6 @@ def extract_text_with_columns(image, reader):
     df = pd.DataFrame(data_dict)
     return df
 
-
 # Updated logic for "Scan Car License Number or any other image"
 if task_choice == "Upload spreadsheet image or any other image":
     uploaded_file = st.file_uploader(
@@ -219,48 +285,52 @@ if task_choice == "Upload spreadsheet image or any other image":
         else:
             st.write("No text detected in the uploaded image.")
 
-
 # Process the chosen task
 elif task_choice == "Upload Scanned word Document":
     uploaded_file = st.file_uploader(
         "Upload a scanned document (JPEG, PNG, PDF)", type=["jpg", "jpeg", "png", "pdf"]
     )
-    if uploaded_file:
+    if uploaded_file is not None:
         if uploaded_file.type == "application/pdf":
-            # Convert PDF to images using the specified poppler path
-            pdf_pages = convert_from_bytes(uploaded_file.read(), poppler_path=poppler_path)
-            st.write(f"PDF contains {len(pdf_pages)} page(s). Processing pages...")
+            pdf_data = uploaded_file.read()
+            document = fitz.open(stream=pdf_data, filetype="pdf")
+            st.write(f"PDF contains {len(document)} page(s). Processing pages...")
 
-            all_text = []
-            for page_number, page in enumerate(pdf_pages, start=1):
-                st.write(f"Processing page {page_number}...")
-                image = np.array(page)
-                st.image(image, caption=f"Uploaded Page {page_number}", use_container_width=True)
+            all_paragraphs = []
+            for page_number in range(len(document)):
+                page = document.load_page(page_number)
+                pix = page.get_pixmap()
+                image = np.array(Image.open(BytesIO(pix.tobytes("png"))))
+
+                st.image(image, caption=f"Uploaded Page {page_number + 1}", use_container_width=True)
+
+                # Initialize EasyOCR reader
                 reader = easyocr.Reader(["en"], gpu=False)
-                extracted_text = extract_text(image, reader)
-                all_text.extend(extracted_text)
+                paragraphs = extract_text_from_pdf(page)
+                all_paragraphs.extend(paragraphs)
 
         else:
-            # Process image files
             file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
             image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
             st.image(image, caption="Uploaded Image", use_container_width=True)
             reader = easyocr.Reader(["en"], gpu=False)
-            extracted_text = extract_text(image, reader)
-            all_text = extracted_text
+            all_paragraphs = extract_text_with_paragraphs(image, reader)
 
-        if all_text:
-            st.write("**Extracted Text:**")
-            st.write("\n".join(all_text))
+        if all_paragraphs:
+            st.write("**Extracted Text (with Paragraphs):**")
+            for para in all_paragraphs:
+                st.write(para)
+                st.write("")  # Blank line for better visual separation
 
             # Save to Word file
-            output = save_to_word(all_text)
+            output = save_to_word_with_paragraphs(all_paragraphs)
             st.download_button(
                 label="Download Word File",
                 data=output,
-                file_name="extracted_text.docx",
+                file_name="extracted_text_with_paragraphs.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             )
         else:
             st.write("No text detected in the uploaded document.")
-
+    else:
+        st.write("Please upload a scanned document to proceed.")
